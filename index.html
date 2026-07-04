@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; }
+        #pdf-content { width: 210mm; background: white; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: #003366; color: white; padding: 10px; font-size: 12px; }
+        td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .p-img { width: 50px; height: 50px; object-fit: contain; }
+        .btn-add { background: #003366; color: white; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="pdf-content">
+    <h2>Orsted Egypt - Quotation</h2>
+    <table id="q-table">
+        <thead>
+            <tr>
+                <th>صورة</th><th>المنتج</th><th>اللون</th><th>العرض</th><th>الارتفاع</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th>
+            </tr>
+        </thead>
+        <tbody id="q-tbody"></tbody>
+    </table>
+    <br>
+    <button class="btn-add" onclick="addRow()">➕ إضافة منتج من القائمة</button>
+    <button onclick="downloadPDF()" style="background:green; color:white; padding:10px;">📄 تحميل PDF كامل</button>
+</div>
+
+<script>
+// هذه هي "قاعدة البيانات" التي طلبتِها (بدلاً من الإكسيل)
+const productsData = {
+    "شيش حصيره": { img: "shutter.jpg", color: "أبيض" },
+    "موتور شاتر": { img: "motor.jpg", color: "فضي" },
+    "ريموت تحكم": { img: "remote.jpg", color: "أسود" }
+};
+
+function addRow() {
+    let tbody = document.getElementById('q-tbody');
+    let row = document.createElement('tr');
+    let options = Object.keys(productsData).map(p => `<option value="${p}">${p}</option>`).join('');
+    
+    row.innerHTML = `
+        <td><img src="" class="p-img"></td>
+        <td><select onchange="updateData(this)"><option>اختر المنتج...</option>${options}</select></td>
+        <td><input type="text" class="color"></td>
+        <td><input type="number"></td><td><input type="number"></td>
+        <td><input type="number" class="qty" value="1" oninput="calc(this)"></td>
+        <td><input type="number" class="price" oninput="calc(this)"></td>
+        <td class="total">0</td>
+    `;
+    tbody.appendChild(row);
+}
+
+function updateData(select) {
+    let row = select.parentElement.parentElement;
+    let data = productsData[select.value];
+    row.querySelector('.p-img').src = data.img;
+    row.querySelector('.color').value = data.color;
+}
+
+function calc(el) {
+    let row = el.parentElement.parentElement;
+    let total = row.querySelector('.qty').value * row.querySelector('.price').value;
+    row.querySelector('.total').innerText = total;
+}
+
+function downloadPDF() {
+    html2pdf().from(document.getElementById('pdf-content')).set({
+        margin: 5, filename: 'Orsted_Quotation.pdf', jsPDF: { format: 'a4', orientation: 'portrait' }
+    }).save();
+}
+</script>
+</body>
+</html>
